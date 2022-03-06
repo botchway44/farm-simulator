@@ -1,20 +1,17 @@
 import { Router, Request, Response } from 'express'
-import { create } from "../../db/dal/building";
-const { Building } = require("../../db/models/Building");
+import BuildingController from "../controllers/building.controller";
+import UnitController from "../controllers/unit.controller";
+
 const FarmRouter = Router()
 
-FarmRouter.get('/', async (req: Request, res: Response) => {
-    const id = Number(req.params.id)
+FarmRouter.get('/building', BuildingController.getAll)
+FarmRouter.post('/building', BuildingController.create)
+FarmRouter.get('/building/:id/units', BuildingController.getAllUnitsByBuildingId)
 
-    const farm = await create({ name: "test", feedingInterval: 1, createdAt: new Date(), updatedAt: new Date() });
-    return res.status(200).send({ message: farm })
-})
+FarmRouter.post('/unit', UnitController.create)
+FarmRouter.get('/unit', UnitController.getAll)
+FarmRouter.get('/unit/:id', UnitController.getUnit)
 
-FarmRouter.get('/all', async (req: Request, res: Response) => {
-    const id = Number(req.params.id)
 
-    const farm = await Building.findAll();
-    return res.status(200).send({ message: farm })
-})
 
 export default FarmRouter

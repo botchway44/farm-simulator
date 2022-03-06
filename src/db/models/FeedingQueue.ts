@@ -1,33 +1,30 @@
 import { DataTypes, Model, Optional } from 'sequelize'
 import sequelizeConnection from '../config'
 import { Unit } from './Unit';
+import { Building } from './Building';
 import CONFIG from "../../config/config"
-interface BuildingAttributes {
+interface FeedingQueueAttributes {
     id: string | undefined;
 
-    name: string;
-    unitType: string;
-
-    feedingInterval: number;
-    numOfUnits: number;
+    processId: string;
+    locked: boolean;
 
     createdAt: Date;
     updatedAt: Date;
     deletedAt?: Date;
 }
 
-export interface BuildingInput extends Omit<BuildingAttributes, 'id' | 'feedingInterval' | 'feedingInterval' | 'numOfUnits'> { }
-export interface BuildingOuput extends Required<BuildingAttributes> {
+export interface FeedingQueueInput extends Optional<FeedingQueueAttributes, 'id' | 'locked'> { }
+export interface FeedingQueueOuput extends Required<FeedingQueueAttributes> {
 
 }
 
-export class Building extends Model<BuildingAttributes, BuildingInput> implements BuildingAttributes {
+export class FeedingQueue extends Model<FeedingQueueAttributes, FeedingQueueInput> implements FeedingQueueAttributes {
 
     public id!: string
-    public name!: string
-    public unitType!: string
-    public feedingInterval!: number;
-    public numOfUnits!: number;
+    public processId!: string
+    public locked!: boolean
+
     // timestamps!
     public readonly createdAt!: Date;
     public readonly updatedAt!: Date;
@@ -37,28 +34,20 @@ export class Building extends Model<BuildingAttributes, BuildingInput> implement
     }
 }
 
-Building.init(
+FeedingQueue.init(
     {
         id: {
             type: DataTypes.STRING,
             primaryKey: true,
             defaultValue: DataTypes.UUIDV4,
         },
-        name: {
+        processId: {
             type: DataTypes.STRING,
             allowNull: false
         },
-        unitType: {
-            type: DataTypes.STRING,
-            allowNull: false
-        },
-        numOfUnits: {
-            type: DataTypes.INTEGER,
-            defaultValue: 0
-        },
-        feedingInterval: {
-            type: DataTypes.INTEGER,
-            defaultValue: CONFIG.BUILDING_FEEDING_INTERVAL
+        locked: {
+            type: DataTypes.BOOLEAN,
+            defaultValue: true
         },
         createdAt: {
             type: DataTypes.DATE,
@@ -77,5 +66,6 @@ Building.init(
     }
 );
 
-Building.hasMany(Unit, { foreignKey: "buildingId", onDelete: "RESTRICT" });
+FeedingQueue.hasMany(Building, { foreignKey: "processId", onDelete: "RESTRICT" });
+FeedingQueue.hasMany(Unit, { foreignKey: "processId", onDelete: "RESTRICT" });
 
