@@ -39,6 +39,17 @@ class UnitController {
             return next(error);
         }
     }
+
+    async feedUnit(request: Request, response: Response, next: NextFunction) {
+        const id = request.params.id;
+        try {
+            const data = await UnitService.feedUnit(id);
+            return response.status(200).send(data);
+        } catch (error) {
+            console.log("Err", error);
+            return next(error);
+        }
+    }
 }
 
 export default new UnitController();

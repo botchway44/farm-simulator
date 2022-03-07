@@ -1,7 +1,7 @@
 import { DataTypes, Model, Optional } from 'sequelize'
 import sequelizeConnection from '../config'
 import CONFIG from "../../config/config"
-
+import FeedingService from "../dal/feeding";
 export interface UnitAttributes {
     id: string | undefined;
 
@@ -40,7 +40,8 @@ export class Unit extends Model<UnitAttributes, UnitInput> implements UnitAttrib
     public readonly deletedAt!: Date;
 
 
-    initiateFeeding(): void {
+    gainHealth(buildingInterval: number): void {
+
     }
 }
 
@@ -62,17 +63,35 @@ Unit.init(
         },
         unitHealth: {
             type: DataTypes.INTEGER,
-            defaultValue: getRandomPoints()
+            defaultValue: getRandomPoints(),
+            get() {
+                const lastFed = this.getDataValue('lastFed');
+                // 'this' allows you to access attributes of the instance
+                const isRecentlyFed = new Date().getTime() - new Date(lastFed).getTime();
+                const diff = Math.floor(isRecentlyFed / 1000);
 
+
+                const health = this.getDataValue('unitHealth');
+                let newHealth = health - Math.floor(diff / CONFIG.BUILDING_FEEDING_INTERVAL);
+
+                console.log("Health computed newHealth", newHealth, "diff", diff, "health", health);
+                newHealth = newHealth < 0 ? 0 : newHealth;
+                this.setDataValue('unitHealth', newHealth);
+                return newHealth;
+            }
         },
         lastFed: {
-            type: DataTypes.DATE,
+            type: DataTypes.DATE,   
             defaultValue: new Date().toISOString(),
 
         },
         alive: {
             type: DataTypes.BOOLEAN,
             defaultValue: true,
+            get() {
+                const health = this.getDataValue('unitHealth');
+                return health > 0;
+            }
 
         },
         feedingInterval: {

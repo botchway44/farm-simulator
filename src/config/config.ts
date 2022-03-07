@@ -7,5 +7,6 @@ const config = {
     MAX_RANDOM_HEALTH: 100,
     BUILDINGS: "buildings",
     UNITS: "units",
+    PROCESSQUEUE: "process",
 };
 export default config; 

@@ -11,6 +11,7 @@ FarmRouter.get('/building/:id/units', BuildingController.getAllUnitsByBuildingId
 FarmRouter.post('/unit', UnitController.create)
 FarmRouter.get('/unit', UnitController.getAll)
 FarmRouter.get('/unit/:id', UnitController.getUnit)
+FarmRouter.get('/unit/:id/feed', UnitController.feedUnit)
 
 
 

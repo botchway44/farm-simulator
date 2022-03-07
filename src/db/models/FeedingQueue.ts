@@ -14,7 +14,7 @@ interface FeedingQueueAttributes {
     deletedAt?: Date;
 }
 
-export interface FeedingQueueInput extends Optional<FeedingQueueAttributes, 'id' | 'locked'> { }
+export interface FeedingQueueInput extends Omit<FeedingQueueAttributes, 'id' | 'locked'> { }
 export interface FeedingQueueOuput extends Required<FeedingQueueAttributes> {
 
 }
@@ -59,13 +59,10 @@ FeedingQueue.init(
         }
     },
     {
-        tableName: CONFIG.BUILDINGS,
+        tableName: CONFIG.PROCESSQUEUE,
         timestamps: true,
         sequelize: sequelizeConnection,
         paranoid: true
     }
 );
-
-FeedingQueue.hasMany(Building, { foreignKey: "processId", onDelete: "RESTRICT" });
-FeedingQueue.hasMany(Unit, { foreignKey: "processId", onDelete: "RESTRICT" });
 
