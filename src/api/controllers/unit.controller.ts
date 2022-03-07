@@ -47,7 +47,7 @@ class UnitController {
             return response.status(200).send(data);
         } catch (error) {
             console.log("Err", error);
-            return next(error);
+            next(error);
         }
     }
 }

@@ -1,18 +1,18 @@
 import { NextFunction, Request, Response } from "express";
 import { ValidationError } from "sequelize";
 import { HttpCode } from "../errors/codes";
-import BaseError from "../errors/BaseError";
+import ErrorHandler from "../errors/BaseError";
 
 export const errorHandler = (
-	error: BaseError | ValidationError,
+	error: ErrorHandler | ValidationError,
 	request: Request,
 	response: Response,
 	next: NextFunction
 ) => {
 	let description, message, code;
-	console.log(error);
+	console.log("Error is an instance of ", "BAse error", error instanceof ErrorHandler, "Validation error", error instanceof ValidationError);
 
-	if (error instanceof BaseError) {
+	if (error instanceof ErrorHandler) {
 		({ description, message, code } = error);
 	}
 

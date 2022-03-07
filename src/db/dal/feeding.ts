@@ -27,24 +27,17 @@ class FeedingQueueService {
         return await FeedingQueue.findByPk(id);
     }
 
-    async update(id: string, value: boolean): Promise<FeedingQueueOuput | null> {
-        const process = await FeedingQueue.findOne({
+    async update(id: string, value: boolean): Promise<void> {
+        const process = await FeedingQueue.update({ "locked": value }, {
             where: {
                 processId: id,
-                locked: true
             }
         });
 
 
-        if (!process) return null;
-        console.log("The process return after update", process);
-        await process.set("locked", value);
-        await process.save();
-
-        return process;
     }
 
-    isSafe(id: string): Promise<boolean> {
+    isLocked(id: string): Promise<boolean> {
 
         return FeedingQueue.findOne({
             where: {
@@ -53,9 +46,9 @@ class FeedingQueueService {
         }).then(process => {
             console.log("Locked is ", process?.get("locked"));
 
-            if (!process) return true;
+            if (!process) return false;
 
-            return process.get("locked") ? false : true;
+            return process.get("locked");
         });
     }
 }

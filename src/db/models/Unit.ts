@@ -123,7 +123,7 @@ Unit.init(
 );
 
 
-function getRandomPoints() {
+export function getRandomPoints() {
 
     while (true) {
         let points = Math.floor(Math.random() * 100);

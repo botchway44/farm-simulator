@@ -3,9 +3,9 @@ import { resolve } from 'path';
 import { Op } from 'sequelize'
 import ErrorHandler from '../../errors/BaseError';
 import { HttpCode } from '../../errors/codes';
-import { Unit, Building, FeedingQueue, UnitInput, UnitOuput, FeedingQueueInput } from '../models'
+import { Unit, Building, FeedingQueue, UnitInput, UnitOuput, FeedingQueueInput, getRandomPoints } from '../models'
 import FeedingQueueService from './feeding'
-
+import CONFIG from "../../config/config";
 class UnitService {
     async create(payload: UnitInput): Promise<UnitOuput> {
         //update the building count
@@ -27,27 +27,34 @@ class UnitService {
         building.increment("numOfUnits", { by: 1 })
         await building.save();
 
-
         return unit
     }
 
     async feedUnit(id: string): Promise<any> {
         const unit = await Unit.findByPk(id);
 
+        //If there is not unit throw an error
         if (!unit) {
             throw new ErrorHandler(
                 `There is no unit with ID: ${id}.`,
                 "NOT_FOUND",
                 HttpCode.NOT_FOUND
             );
-        } else {
+        }
 
+        //Verify if the unit is not dead
+        if (!unit.get("alive")) {
+            throw new ErrorHandler(
+                `Unit is dead : ${id}.`,
+                "UNIT IS DEAD",
+                HttpCode.SERVER_ERROR
+            );
+        }
 
-
-            //verify the feeding interval
-            const _d = unit.getDataValue("updatedAt");
-            const interval = new Date().getTime() - new Date(_d).getTime();
-            console.log("Interval is", interval);
+        //verify the feeding interval
+        const _d = unit.getDataValue("updatedAt");
+        const interval = Math.round(new Date().getTime() - new Date(_d).getTime()) / 1000;
+            //if the interval is lessthan the feeding interval, throw an error
             if (interval < unit.get("feedingInterval")) {
                 throw new ErrorHandler(
                     `This unit is already in the feeding process: ${id}.`,
@@ -55,34 +62,27 @@ class UnitService {
                     HttpCode.SERVER_ERROR
                 );
             }
-            //if lastfed or updated at in seconds is greater lessthan feeding than, return error
-            console.log("Starting Feeding unit", unit.getDataValue("name"));
 
-            const resolved = await !FeedingQueueService.isSafe(id);
-            console.log(id, "Process Locked is ", resolved);
+        //If the unit is not locked, lock it and feed else throw an error
+        console.log("Starting Feeding unit", unit.getDataValue("name"));
+        const resolved = await FeedingQueueService.isLocked(id);
 
-            if (resolved) {
-
-                console.log("Cannot Feeding unit", id);
-
-                throw new ErrorHandler(
-                    `Unit with Id: ${id}. is currently been fed`,
-                    "FAILED",
-                    HttpCode.NOT_FOUND
-                );
-            } else {
-
-
-                const payload = { "processId": id } as FeedingQueueInput;
-                const process = await FeedingQueueService.create(payload);
-
-                console.log("Feeding unit", id);
-                initiateFeeding(unit);
-
-                return { message: "Fedding started" };
-
-            }
+        if (resolved) {
+            throw new ErrorHandler(
+                `Unit with Id: ${id}. is currently been fed`,
+                "FAILED",
+                HttpCode.NOT_FOUND
+            );
         }
+
+
+        const payload = { "processId": id } as FeedingQueueInput;
+        await FeedingQueueService.create(payload);
+        await FeedingQueueService.update(id, true);
+        initiateFeeding(id);
+
+        return { message: "Fedding started" };
+
     }
     async getUnit(id: string): Promise<UnitOuput | null> {
         return await Unit.findByPk(id);
@@ -95,21 +95,30 @@ class UnitService {
 }
 
 
-function initiateFeeding(unit: Unit): Promise<void> {
+function initiateFeeding(id: string): Promise<void> {
 
     return new Promise((resolve, reject) => {
 
         setTimeout(async () => {
-            const points = 90;
-            console.log("Points of the day ", points)
-            console.log(`${unit.getDataValue('name')} has been fed : ${unit.getDataValue("unitHealth")} ${unit.get("id")}`);
+            const unit = await Unit.findByPk(id);
+            if (!unit) return;
 
-            unit.set("unitHealth", points);
-            unit.set("lastFed", new Date());
-            unit.save()
-            // const res = await FeedingQueueService.update(unit.get("id"), false);
-            // console.log("Feeding unit", res);
-        }, 10000);
+            const points = getRandomPoints();
+            const lastFed = new Date();
+
+            await Unit.update({ lastFed: new Date(), unitHealth: points, updatedAt: lastFed }, {
+                where: {
+                    id: id
+                }
+            });
+
+
+            console.log(`${unit.getDataValue('name')} has been fed : ${points} Lastfed ${lastFed}`);
+            const res = await FeedingQueueService.update(unit.get("id"), false);
+            console.log("----------------------------------------------------");
+            console.log("Feeding unit Complete");
+            console.log("----------------------------------------------------");
+        }, CONFIG.FEED_SIMULATION_TIME); // simulate a 5 second feeding delay
     });
 }
 

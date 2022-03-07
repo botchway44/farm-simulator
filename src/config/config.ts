@@ -1,12 +1,13 @@
 require('dotenv').config();
 
 const config = {
-    UNIT_FEEDING_INTERVAL: parseInt(process.env.UNIT_FEEDING_INTERVAL as string) || 10,
+    UNIT_FEEDING_INTERVAL: parseInt(process.env.UNIT_FEEDING_INTERVAL as string) || 1000,
     BUILDING_FEEDING_INTERVAL: parseInt(process.env.BUILDING_FEEDING_INTERVAL as string) || 60,
-    MIN_RANDOM_HEALTH: 50,
-    MAX_RANDOM_HEALTH: 100,
+    MIN_RANDOM_HEALTH: parseInt(process.env.MIN_RANDOM_HEALTH as string) || 50,
+    MAX_RANDOM_HEALTH: parseInt(process.env.MAX_RANDOM_HEALTH as string) || 100,
     BUILDINGS: "buildings",
     UNITS: "units",
     PROCESSQUEUE: "process",
+    FEED_SIMULATION_TIME: parseInt(process.env.FEED_SIMULATION_TIME as string) || 50000
 };
 export default config; 

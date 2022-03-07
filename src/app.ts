@@ -13,11 +13,11 @@ export const get = () => {
     const app: Application = express()
 
     // Middlewares
+    app.use(errorHandler);
     app.use(morgan('dev'));
     app.use(helmet());
     app.use(express.json());
     app.use(express.urlencoded({ extended: true }));
-    app.use(errorHandler);
 
     app.use('/api/v1', routes)
 
