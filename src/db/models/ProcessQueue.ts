@@ -3,7 +3,7 @@ import sequelizeConnection from '../config'
 import { Unit } from './Unit';
 import { Building } from './Building';
 import CONFIG from "../../config/config"
-interface FeedingQueueAttributes {
+interface ProcessQueueAttributes {
     id: string | undefined;
 
     processId: string;
@@ -14,12 +14,12 @@ interface FeedingQueueAttributes {
     deletedAt?: Date;
 }
 
-export interface FeedingQueueInput extends Omit<FeedingQueueAttributes, 'id' | 'locked'> { }
-export interface FeedingQueueOuput extends Required<FeedingQueueAttributes> {
+export interface ProcessQueueInput extends Omit<ProcessQueueAttributes, 'id' | 'locked'> { }
+export interface ProcessQueueOuput extends Required<ProcessQueueAttributes> {
 
 }
 
-export class FeedingQueue extends Model<FeedingQueueAttributes, FeedingQueueInput> implements FeedingQueueAttributes {
+export class ProcessQueue extends Model<ProcessQueueAttributes, ProcessQueueInput> implements ProcessQueueAttributes {
 
     public id!: string
     public processId!: string
@@ -34,7 +34,7 @@ export class FeedingQueue extends Model<FeedingQueueAttributes, FeedingQueueInpu
     }
 }
 
-FeedingQueue.init(
+ProcessQueue.init(
     {
         id: {
             type: DataTypes.STRING,

@@ -2,15 +2,15 @@
 import { Op } from 'sequelize'
 import ErrorHandler from '../../errors/BaseError';
 import { HttpCode } from '../../errors/codes';
-import { Unit, Building, FeedingQueue, FeedingQueueInput, FeedingQueueOuput } from '../models'
+import { Unit, Building, ProcessQueue, ProcessQueueInput, ProcessQueueOuput } from '../models'
 import { UnitInput, UnitOuput } from '../models'
 
 
-class FeedingQueueService {
-    async create(payload: FeedingQueueInput): Promise<FeedingQueueOuput> {
+class ProcessService {
+    async create(payload: ProcessQueueInput): Promise<ProcessQueueOuput> {
         //update the building count
 
-        const [process, created] = await FeedingQueue.findOrCreate({
+        const [process, created] = await ProcessQueue.findOrCreate({
             where: {
                 processId: payload.processId
             },
@@ -23,12 +23,12 @@ class FeedingQueueService {
         return process
     }
 
-    async get(id: string): Promise<FeedingQueueOuput | null> {
-        return await FeedingQueue.findByPk(id);
+    async get(id: string): Promise<ProcessQueueOuput | null> {
+        return await ProcessQueue.findByPk(id);
     }
 
     async update(id: string, value: boolean): Promise<void> {
-        const process = await FeedingQueue.update({ "locked": value }, {
+        const process = await ProcessQueue.update({ "locked": value }, {
             where: {
                 processId: id,
             }
@@ -39,7 +39,7 @@ class FeedingQueueService {
 
     isLocked(id: string): Promise<boolean> {
 
-        return FeedingQueue.findOne({
+        return ProcessQueue.findOne({
             where: {
                 processId: id,
             }
@@ -52,5 +52,5 @@ class FeedingQueueService {
         });
     }
 }
-export default new FeedingQueueService();
+export default new ProcessService();
 

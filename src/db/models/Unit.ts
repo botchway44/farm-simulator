@@ -1,7 +1,7 @@
 import { DataTypes, Model, Optional } from 'sequelize'
 import sequelizeConnection from '../config'
 import CONFIG from "../../config/config"
-import FeedingService from "../dal/feeding";
+import FeedingService from "../dal/process";
 export interface UnitAttributes {
     id: string | undefined;
 

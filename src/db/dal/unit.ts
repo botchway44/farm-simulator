@@ -3,8 +3,8 @@ import { resolve } from 'path';
 import { Op } from 'sequelize'
 import ErrorHandler from '../../errors/BaseError';
 import { HttpCode } from '../../errors/codes';
-import { Unit, Building, FeedingQueue, UnitInput, UnitOuput, FeedingQueueInput, getRandomPoints } from '../models'
-import FeedingQueueService from './feeding'
+import { Unit, Building, ProcessQueue, UnitInput, UnitOuput, ProcessQueueInput, getRandomPoints } from '../models'
+import ProcessService from './process'
 import CONFIG from "../../config/config";
 class UnitService {
     async create(payload: UnitInput): Promise<UnitOuput> {
@@ -65,7 +65,7 @@ class UnitService {
 
         //If the unit is not locked, lock it and feed else throw an error
         console.log("Starting Feeding unit", unit.getDataValue("name"));
-        const resolved = await FeedingQueueService.isLocked(id);
+        const resolved = await ProcessService.isLocked(id);
 
         if (resolved) {
             throw new ErrorHandler(
@@ -76,9 +76,9 @@ class UnitService {
         }
 
 
-        const payload = { "processId": id } as FeedingQueueInput;
-        await FeedingQueueService.create(payload);
-        await FeedingQueueService.update(id, true);
+        const payload = { "processId": id } as ProcessQueueInput;
+        await ProcessService.create(payload);
+        await ProcessService.update(id, true);
         initiateFeeding(id);
 
         return { message: "Fedding started" };
@@ -114,7 +114,7 @@ function initiateFeeding(id: string): Promise<void> {
 
 
             console.log(`${unit.getDataValue('name')} has been fed : ${points} Lastfed ${lastFed}`);
-            const res = await FeedingQueueService.update(unit.get("id"), false);
+            const res = await ProcessService.update(unit.get("id"), false);
             console.log("----------------------------------------------------");
             console.log("Feeding unit Complete");
             console.log("----------------------------------------------------");
