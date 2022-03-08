@@ -1,0 +1,23 @@
+# docker-compose.yml
+
+version: '3.9'
+services:
+  server:
+    build: ./
+    command: sh -c "yarn && yarn build && yarn run start"
+    ports:
+      - 3000:3000
+    working_dir: /app
+    volumes:
+      - ./:/app
+    depends_on:
+      - db
+  db:
+    image: postgres
+    container_name: 'postgres'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - 5432:5432
+volumes:
+  postgres_data:
