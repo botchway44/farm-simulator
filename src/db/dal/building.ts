@@ -33,6 +33,7 @@ class BuildingService {
         //verify the feeding interval
         const _d = building.getDataValue("updatedAt");
         const interval = Math.round(new Date().getTime() - new Date(_d).getTime()) / 1000;
+        console.log("Interval : ", interval);
         //if the interval is lessthan the feeding interval, throw an error
         if (interval < CONFIG.BUILDING_FEEDING_INTERVAL) {
             throw new ErrorHandler(
@@ -52,18 +53,25 @@ class BuildingService {
             );
         }
 
+        //Create a process and add to the process queue
+        const _payload = { "processId": id } as ProcessQueueInput;
+        await ProcessService.create(_payload);
+        await ProcessService.update(id, true);
 
+        console.log("Building Id is", id);
         const units = await Unit.findAll({
             where: {
                 buildingId: id
             }
         })
 
+        console.log("Units are ", units.length)
         for (const unit of units) {
-            const payload = { "processId": id } as ProcessQueueInput;
+            console.log("Starting Feeding unit", unit.getDataValue("name"));
+            const payload = { "processId": unit.get("id") } as ProcessQueueInput;
             await ProcessService.create(payload);
-            await ProcessService.update(id, true);
-            initiateFeeding(id);
+            await ProcessService.update(unit.get("id"), true);
+            initiateFeeding(unit.get("id"), id);
         }
 
         return { message: "Building feeding started" }

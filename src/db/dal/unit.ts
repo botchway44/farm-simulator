@@ -103,7 +103,7 @@ class UnitService {
 }
 
 
-export function initiateFeeding(id: string): Promise<void> {
+export function initiateFeeding(id: string, buildingId: string | null = null): Promise<void> {
 
     return new Promise((resolve, reject) => {
 
@@ -111,7 +111,17 @@ export function initiateFeeding(id: string): Promise<void> {
             const unit = await Unit.findByPk(id);
             if (!unit) return;
 
-            const points = getRandomPoints();
+            //calculate the health point and add one for unit feeding
+            //Verify if the unit is not dead : TODO Refactor 
+            const _lastFed = unit.getDataValue('lastFed');
+            const isRecentlyFed = new Date().getTime() - new Date(_lastFed).getTime();
+            const diff = Math.floor(isRecentlyFed / 1000);
+            const health = unit.getDataValue('unitHealth');
+            let newHealth = health - Math.floor(diff / unit.getDataValue('feedingInterval'));
+            newHealth = newHealth >= 0 ? newHealth : 0;
+
+            //dynamically set the points based on unit feeding or building feeding
+            const points = buildingId ? (newHealth + 1) : getRandomPoints();
             const lastFed = new Date();
 
             await Unit.update({ lastFed: new Date(), unitHealth: points, updatedAt: lastFed }, {
@@ -126,6 +136,19 @@ export function initiateFeeding(id: string): Promise<void> {
             console.log("----------------------------------------------------");
             console.log("Feeding unit Complete");
             console.log("----------------------------------------------------");
+
+            //resusing this function for simulation. If a building Id is present,
+            // remove this from the process queue
+            if (buildingId) {
+                await ProcessService.update(buildingId, false);
+
+                //update the last fed time, this will use the last unit fed time
+                await Building.update({ lastFed: new Date(), updatedAt: lastFed }, {
+                    where: {
+                        id: id
+                    }
+                });
+            }
         }, CONFIG.FEED_SIMULATION_TIME); // simulate a 5 second feeding delay
     });
 }
