@@ -26,7 +26,15 @@ class BuildingController {
         }
     }
 
-
+    async feedBuilding(request: Request, response: Response, next: NextFunction) {
+        const id = request.params.id;
+        try {
+            const data = await BuildingService.feedBuilding(id);
+            return response.status(200).send(data);
+        } catch (error) {
+            return next(error);
+        }
+    }
 
     async getAllUnitsByBuildingId(request: Request, response: Response, next: NextFunction) {
 

@@ -42,8 +42,16 @@ class UnitService {
             );
         }
 
-        //Verify if the unit is not dead
-        if (!unit.get("alive")) {
+
+
+        //Verify if the unit is not dead : TODO Refactor 
+        const lastFed = unit.getDataValue('lastFed');
+        const isRecentlyFed = new Date().getTime() - new Date(lastFed).getTime();
+        const diff = Math.floor(isRecentlyFed / 1000);
+        const health = unit.getDataValue('unitHealth');
+        let newHealth = health - Math.floor(diff / unit.getDataValue('feedingInterval'));
+
+        if (newHealth <= 0) {
             throw new ErrorHandler(
                 `Unit is dead : ${id}.`,
                 "UNIT IS DEAD",
@@ -55,9 +63,9 @@ class UnitService {
         const _d = unit.getDataValue("updatedAt");
         const interval = Math.round(new Date().getTime() - new Date(_d).getTime()) / 1000;
             //if the interval is lessthan the feeding interval, throw an error
-            if (interval < unit.get("feedingInterval")) {
+        if (interval < CONFIG.UNIT_FEEDING_INTERVAL) {
                 throw new ErrorHandler(
-                    `This unit is already in the feeding process: ${id}.`,
+                    `This Unit feeding interval not reached: ${id}.`,
                     "FAILED",
                     HttpCode.SERVER_ERROR
                 );
@@ -95,7 +103,7 @@ class UnitService {
 }
 
 
-function initiateFeeding(id: string): Promise<void> {
+export function initiateFeeding(id: string): Promise<void> {
 
     return new Promise((resolve, reject) => {
 

@@ -10,13 +10,14 @@ interface BuildingAttributes {
 
     feedingInterval: number;
     numOfUnits: number;
+    lastFed: Date;
 
     createdAt: Date;
     updatedAt: Date;
     deletedAt?: Date;
 }
 
-export interface BuildingInput extends Omit<BuildingAttributes, 'id' | 'feedingInterval' | 'feedingInterval' | 'numOfUnits'> { }
+export interface BuildingInput extends Omit<BuildingAttributes, 'id' | 'feedingInterval' | 'feedingInterval' | 'numOfUnits' | 'lastFed'> { }
 export interface BuildingOuput extends Required<BuildingAttributes> {
 
 }
@@ -28,6 +29,8 @@ export class Building extends Model<BuildingAttributes, BuildingInput> implement
     public unitType!: string
     public feedingInterval!: number;
     public numOfUnits!: number;
+    public lastFed!: Date;
+
     // timestamps!
     public readonly createdAt!: Date;
     public readonly updatedAt!: Date;
@@ -63,6 +66,10 @@ Building.init(
         createdAt: {
             type: DataTypes.DATE,
             allowNull: false,
+        },
+        lastFed: {
+            type: DataTypes.DATE,
+            defaultValue: new Date().toISOString(),
         },
         updatedAt: {
             type: DataTypes.DATE,

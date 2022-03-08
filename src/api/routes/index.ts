@@ -7,6 +7,7 @@ const FarmRouter = Router()
 FarmRouter.get('/building', BuildingController.getAll)
 FarmRouter.post('/building', BuildingController.create)
 FarmRouter.get('/building/:id/units', BuildingController.getAllUnitsByBuildingId)
+FarmRouter.get('/building/:id/feed', BuildingController.feedBuilding)
 
 FarmRouter.post('/unit', UnitController.create)
 FarmRouter.get('/unit', UnitController.getAll)

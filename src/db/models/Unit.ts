@@ -72,9 +72,7 @@ Unit.init(
 
 
                 const health = this.getDataValue('unitHealth');
-                let newHealth = health - Math.floor(diff / CONFIG.BUILDING_FEEDING_INTERVAL);
-
-                console.log("Health computed newHealth", newHealth, "diff", diff, "health", health);
+                let newHealth = health - Math.floor(diff / CONFIG.UNIT_FEEDING_INTERVAL);
                 newHealth = newHealth < 0 ? 0 : newHealth;
                 this.setDataValue('unitHealth', newHealth);
                 return newHealth;
@@ -89,8 +87,16 @@ Unit.init(
             type: DataTypes.BOOLEAN,
             defaultValue: true,
             get() {
+                const lastFed = this.getDataValue('lastFed');
+                // 'this' allows you to access attributes of the instance
+                const isRecentlyFed = new Date().getTime() - new Date(lastFed).getTime();
+                const diff = Math.floor(isRecentlyFed / 1000);
+
+
                 const health = this.getDataValue('unitHealth');
-                return health > 0;
+                let newHealth = health - Math.floor(diff / CONFIG.UNIT_FEEDING_INTERVAL);
+
+                return newHealth > 0 ? true : false;
             }
 
         },
@@ -127,8 +133,7 @@ export function getRandomPoints() {
 
     while (true) {
         let points = Math.floor(Math.random() * 100);
-        if (points > 50 && points <= 100) {
-            console.log("Points computed", points);
+        if (points > CONFIG.MIN_RANDOM_HEALTH && points <= CONFIG.MAX_RANDOM_HEALTH) {
             return points;
         }
     }

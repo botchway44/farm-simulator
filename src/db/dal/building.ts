@@ -1,7 +1,13 @@
 
+import { config } from 'dotenv'
 import { Op } from 'sequelize'
-import { Building, Unit, UnitOuput } from '../models'
-import { BuildingInput, BuildingOuput } from '../models'
+import ErrorHandler from '../../errors/BaseError'
+import { HttpCode } from '../../errors/codes'
+import { BuildingInput, BuildingOuput, Building, Unit, UnitOuput, ProcessQueueInput } from '../models'
+import UnitService, { initiateFeeding } from './unit'
+import ProcessService from './process'
+
+import CONFIG from "../../config/config";
 
 class BuildingService {
     async create(payload: BuildingInput): Promise<BuildingOuput> {
@@ -16,6 +22,51 @@ class BuildingService {
             }
         })
         return units
+    }
+
+    async feedBuilding(id: string): Promise<any> {
+
+        //verify if the building is locked and not been fed yet
+        const building = await Building.findByPk(id);
+        if (!building) throw new ErrorHandler("Building not found", "NOT_FOUND", HttpCode.NOT_FOUND);
+
+        //verify the feeding interval
+        const _d = building.getDataValue("updatedAt");
+        const interval = Math.round(new Date().getTime() - new Date(_d).getTime()) / 1000;
+        //if the interval is lessthan the feeding interval, throw an error
+        if (interval < CONFIG.BUILDING_FEEDING_INTERVAL) {
+            throw new ErrorHandler(
+                `This Building feeding interval not reached: ${id}.`,
+                "FAILED",
+                HttpCode.SERVER_ERROR
+            );
+        }
+
+        // verify if the building interval is on
+        const resolved = await ProcessService.isLocked(id);
+        if (resolved) {
+            throw new ErrorHandler(
+                `Building with Id: ${id}. is currently been fed`,
+                "FAILED",
+                HttpCode.NOT_FOUND
+            );
+        }
+
+
+        const units = await Unit.findAll({
+            where: {
+                buildingId: id
+            }
+        })
+
+        for (const unit of units) {
+            const payload = { "processId": id } as ProcessQueueInput;
+            await ProcessService.create(payload);
+            await ProcessService.update(id, true);
+            initiateFeeding(id);
+        }
+
+        return { message: "Building feeding started" }
     }
 
     async getAll(): Promise<BuildingOuput[]> {
