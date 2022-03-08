@@ -16,6 +16,8 @@ The application will create farm buildings with farm units, and feed those farm 
      - verify if the building is in the feeding interval
      - Go through all building units and feed them.
      - To verify if the if the building is not currently feeding, we lock the currently fed building, allow it to feed and unlock it
+
+
      - 
 
 ## Built with
@@ -23,3 +25,4 @@ The application will create farm buildings with farm units, and feed those farm 
 - Nodejs, Express with Typescript
 - Sequelize
 - Postgress
+- **[Postman Collection](https://go.postman.co/workspace/My-Workspace~89e3bd0a-f9ea-4223-82fd-f1a8cced51d3/collection/3882376-02681d2f-6ce1-4d52-b961-f03660ddefc3?action=share&creator=3882376)** - Use link to join Postman collection
