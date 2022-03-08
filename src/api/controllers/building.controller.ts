@@ -1,7 +1,6 @@
 import { NextFunction, Request, Response } from "express";
-import { Building, BuildingInput } from '../../db/models'
+import { BuildingInput } from '../../db/models'
 import BuildingService from '../../db/dal/building';
-import UnitService from '../../db/dal/unit';
 
 class BuildingController {
     async getAll(request: Request, response: Response, next: NextFunction) {

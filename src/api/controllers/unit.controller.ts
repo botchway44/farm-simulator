@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from "express";
-import { Unit, UnitInput } from '../../db/models'
+import { UnitInput } from '../../db/models'
 import UnitService from '../../db/dal/unit'
 
 class UnitController {
