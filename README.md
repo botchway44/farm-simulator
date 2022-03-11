@@ -5,9 +5,11 @@ The application will create farm buildings with farm units, and feed those farm 
 
 
 ## ⚙️ Getting Started
- - cd into the project folder and run `npm install` or `yarn`
- - 
-### FEEDING ALGORITHM
+Run the following commands to start the up
+ - `sudo docker-compose up --build`
+ - Open your web browser and type http://localhost:3000/ to see the application
+ 
+## 📚 FEEDING ALGORITHM
  - To Feed a unit
      - verify if the unit is alive, is not currenly feeding or is in the feeding interval
      - To verify if the if the unit is not currently feeding, we lock the currently fed unit, allow it to feed and unlock it
